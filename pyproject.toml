@@ -1,0 +1,25 @@
+[project]
+name = "agent-mesh"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "google-adk>=1.25.0",
+    "google-genai",
+    "pydantic>=2.0",
+    "aiosqlite",
+    "sqlalchemy[asyncio]",
+    "opentelemetry-api",
+    "opentelemetry-sdk",
+    "opentelemetry-exporter-otlp",
+    "openinference-instrumentation-google-adk",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+[tool.uv]
+dev-dependencies = [
+    "pytest",
+    "pytest-asyncio",
+    "pytest-mock",
+]
