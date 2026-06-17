@@ -1,0 +1,57 @@
+agent_mesh/health_monitor.py
+  s_a972b7a21705d5::t_5baaf7cef162d1 3,19
+agent_mesh/tools.py
+  s_ebc8cad830ce41::t_4eeaa4b5dd9b26 15-28
+agent_mesh/dispatcher.py
+  s_ebc8cad830ce41::t_0b2a74cdc90acc 41-45
+agent_mesh/synthesizer.py
+  s_ebc8cad830ce41::t_e915159d7ce81f 16-19
+agent_mesh/router_agent.py
+  s_ebc8cad830ce41::t_623f26a1523637 2,8,15,19-20,23,34
+  s_d6c94669f0b3f3::t_ac3891985047d8 11,24
+tests/test_integration.py
+  s_d6c94669f0b3f3::t_1cbea65787c2a0 90-92
+  s_d6c94669f0b3f3::t_5f3d714e7cb54f 9-57
+  s_d6c94669f0b3f3::t_810a57ff9bcb7a 139
+  s_d6c94669f0b3f3::t_bd1d98c8270d10 72-89
+  s_d6c94669f0b3f3::t_48d32b2088df04 111
+tests/test_router_agent.py
+  s_ebc8cad830ce41::t_46babe52247a16 16-17
+  s_d6c94669f0b3f3::t_42ba882b34b0a9 1-15,18-52
+tests/test_dispatcher.py
+  s_d6c94669f0b3f3::t_04b48f02f2f14d 1-164
+agent_mesh/registry.py
+  s_a972b7a21705d5::t_78f5610f2180a5 56-63
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.7",
+  "base_commit_sha": "147e45ab254e59424b170db680260492a20ce28a",
+  "prompts": {},
+  "sessions": {
+    "s_a972b7a21705d5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cedfa327-3d01-46e4-b756-a4bc2136201e",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    },
+    "s_d6c94669f0b3f3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "db4a14a1-a342-422a-84e6-ca92b9f7fb3a",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    },
+    "s_ebc8cad830ce41": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "acae1c96-ca87-4b4c-a028-e6be014f2758",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
