@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -18,7 +18,7 @@ class AgentRecord(BaseModel):
     status: Literal["healthy", "degraded", "offline"] = "healthy"
     timeout_seconds: float = 30.0
     last_checked_at: datetime | None = None
-    registered_at: datetime = Field(default_factory=datetime.utcnow)
+    registered_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     consecutive_failures: int = 0
     consecutive_successes: int = 0
 

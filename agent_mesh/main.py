@@ -83,15 +83,17 @@ async def main() -> None:
     # 8. Session setup
     user_id = "local_user"
     session_id = "cli_session"
-    await session_service.create_session(
-        app_name="agent-mesh", user_id=user_id, session_id=session_id
-    )
+    if not await session_service.get_session(app_name="agent-mesh", user_id=user_id, session_id=session_id):
+        await session_service.create_session(
+            app_name="agent-mesh", user_id=user_id, session_id=session_id
+        )
 
     # 9. CLI loop
+    loop = asyncio.get_running_loop()
     print("Agent Mesh ready. Enter a task (Ctrl+C to quit):\n")
     try:
         while True:
-            task = input("> ").strip()
+            task = await loop.run_in_executor(None, lambda: input("> ").strip())
             if not task:
                 continue
             content = types.Content(role="user", parts=[types.Part(text=task)])

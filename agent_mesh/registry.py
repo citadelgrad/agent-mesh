@@ -1,7 +1,7 @@
 import aiosqlite
 import json
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from agent_mesh.models import AgentRecord
 from typing import Callable, Awaitable
 
@@ -97,7 +97,7 @@ class CapabilityRegistry:
                     record.status = "offline"
                 elif record.consecutive_failures >= 2:
                     record.status = "degraded"
-            record.last_checked_at = datetime.utcnow()
+            record.last_checked_at = datetime.now(timezone.utc)
             await db.execute("""
                 UPDATE agents SET status=?, consecutive_failures=?,
                     consecutive_successes=?, last_checked_at=?
