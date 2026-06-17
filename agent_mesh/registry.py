@@ -53,6 +53,14 @@ class CapabilityRegistry:
             await db.execute("DELETE FROM agents WHERE name = ?", (name,))
             await db.commit()
 
+    async def list_all(self) -> list[AgentRecord]:
+        """Returns ALL agents including offline (for health monitoring / recovery)."""
+        async with aiosqlite.connect(self._db_path) as db:
+            db.row_factory = aiosqlite.Row
+            cursor = await db.execute("SELECT * FROM agents ORDER BY name")
+            rows = await cursor.fetchall()
+        return [_row_to_record(row) for row in rows]
+
     async def list_healthy(self) -> list[AgentRecord]:
         async with aiosqlite.connect(self._db_path) as db:
             db.row_factory = aiosqlite.Row

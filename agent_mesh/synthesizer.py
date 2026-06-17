@@ -13,7 +13,10 @@ Your job:
 1. Read all result_* keys from session state.
 2. Synthesize a single, coherent answer to the user's original task.
 3. List the agent names that contributed (sources).
-4. Set partial=true if any specialist failed or was unavailable.
+4. Set partial=true if ANY of these apply:
+   - No result_* keys exist in session state (nothing was dispatched)
+   - Any specialist result had success=false
+   - unavailable_capabilities in session state is non-empty
 5. List all unavailable_capabilities from session state.
 
 Return ONLY valid JSON matching the MeshResponse schema. No preamble, no markdown fences.

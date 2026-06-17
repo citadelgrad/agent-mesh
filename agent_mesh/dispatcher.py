@@ -38,6 +38,11 @@ class ParallelDispatcher(BaseAgent):
         self, ctx: InvocationContext
     ) -> AsyncGenerator[Event, None]:
         raw = ctx.session.state.get("task_decomposition", "{}")
+        if isinstance(raw, str):
+            stripped = raw.strip()
+            if stripped.startswith("```"):
+                lines = stripped.splitlines()
+                raw = "\n".join(lines[1:-1]) if len(lines) > 2 else "{}"
         try:
             decomposition = TaskDecomposition.model_validate_json(
                 raw if isinstance(raw, str) else json.dumps(raw)

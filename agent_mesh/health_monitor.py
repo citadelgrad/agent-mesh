@@ -1,18 +1,8 @@
 import asyncio
 import logging
-import aiosqlite
-from agent_mesh.registry import CapabilityRegistry, _row_to_record
+from agent_mesh.registry import CapabilityRegistry
 
 logger = logging.getLogger(__name__)
-
-
-async def _list_all(registry: CapabilityRegistry):
-    """Returns ALL agents including offline (for recovery polling)."""
-    async with aiosqlite.connect(registry._db_path) as db:
-        db.row_factory = aiosqlite.Row
-        cursor = await db.execute("SELECT * FROM agents")
-        rows = await cursor.fetchall()
-    return [_row_to_record(r) for r in rows]
 
 
 async def health_monitor_loop(
@@ -26,7 +16,7 @@ async def health_monitor_loop(
     health_check_fn timeout is hard-coded to 5s per agent.
     """
     while True:
-        all_agents = await _list_all(registry)
+        all_agents = await registry.list_all()
         for record in all_agents:
             check_fn = registry.get_health_check(record.name)
             if check_fn is None:

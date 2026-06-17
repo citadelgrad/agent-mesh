@@ -12,6 +12,20 @@ def set_registry(registry) -> None:
     _registry = registry
 
 
+async def list_all_agents() -> list[dict]:
+    """
+    Returns ALL registered agents (healthy, degraded, AND offline) with their status and capabilities.
+    Use this in the router so offline capabilities can be marked UNAVAILABLE in task decomposition.
+    """
+    if _registry is None:
+        return []
+    agents = await _registry.list_all()
+    return [
+        {"name": a.name, "description": a.description, "capabilities": a.capabilities, "status": a.status}
+        for a in agents
+    ]
+
+
 async def list_healthy() -> list[dict]:
     """
     Returns all currently-healthy or degraded agents with their capabilities.
