@@ -1,0 +1,19 @@
+.gitignore
+  s_013eb84f44aee9::t_c564eb13c8a0bd 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.7",
+  "base_commit_sha": "6976fe5f79a1179727c9891122c38632f962eaf2",
+  "prompts": {},
+  "sessions": {
+    "s_013eb84f44aee9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4320dbaf-a1fc-4114-b325-0eeb5d9f9bf2",
+        "model": "unknown"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
