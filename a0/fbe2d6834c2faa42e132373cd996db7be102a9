@@ -1,0 +1,26 @@
+agent_mesh/models.py
+  s_2fda76618a335c::t_a3852213b38a5c 3
+  s_2fda76618a335c::t_8018d433cd7f34 21
+agent_mesh/main.py
+  s_2fda76618a335c::t_0129791dc1ba54 92,96
+  s_2fda76618a335c::t_3137895cc946e1 86-89
+agent_mesh/registry.py
+  s_2fda76618a335c::t_c0edc06857bf7d 4
+  s_2fda76618a335c::t_9ba1fcfdaea91e 100
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.7",
+  "base_commit_sha": "a0fbe2d6834c2faa42e132373cd996db7be102a9",
+  "prompts": {},
+  "sessions": {
+    "s_2fda76618a335c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "55cada0d-bf31-4754-8e74-4e95c380cad5",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
