@@ -1,0 +1,19 @@
+.pre-commit-config.yaml
+  s_8df120ee3720ad::t_adcfb65d5d3891 1-52
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.9",
+  "base_commit_sha": "6ae36ecc0117400d1806b992d5f290351dde4c5c",
+  "prompts": {},
+  "sessions": {
+    "s_8df120ee3720ad": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e02f62b7-8509-472b-9b60-db25f7c8a5ea",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
