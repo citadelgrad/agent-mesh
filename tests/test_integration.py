@@ -2,10 +2,12 @@
 Integration tests — require GEMINI_API_KEY to run.
 Skipped automatically when the key is absent.
 """
+
 import os
 import uuid
 import pytest
 import pytest_asyncio
+from unittest.mock import patch
 from google.adk.agents import LlmAgent, SequentialAgent
 from google.adk.runners import Runner, RunConfig
 from google.adk.sessions import InMemorySessionService
@@ -24,6 +26,9 @@ from agent_mesh.specialists import (
     CODE_REVIEW_CAPABILITIES,
 )
 from agent_mesh.models import MeshResponse
+
+from google.adk.models.google_llm import Gemini
+from google.adk.models.llm_response import LlmResponse
 
 
 def make_fresh_specialists():
@@ -56,13 +61,16 @@ def make_fresh_specialists():
         (code_review, CODE_REVIEW_CAPABILITIES),
     ]
 
+
 pytestmark = pytest.mark.skipif(
     not os.getenv("GEMINI_API_KEY"),
     reason="GEMINI_API_KEY not set — skipping live integration tests",
 )
 
 
-async def run_task(runner: Runner, session_service: InMemorySessionService, task: str) -> MeshResponse:
+async def run_task(
+    runner: Runner, session_service: InMemorySessionService, task: str
+) -> MeshResponse:
     user_id = "test_user"
     session_id = str(uuid.uuid4())
     await session_service.create_session(
@@ -91,7 +99,9 @@ async def run_task(runner: Runner, session_service: InMemorySessionService, task
                 lines = raw.splitlines()
                 raw = "\n".join(lines[1:-1]) if len(lines) > 2 else "{}"
             return MeshResponse.model_validate_json(raw)
-    return MeshResponse(answer="no response", sources=[], partial=True, unavailable_capabilities=[])
+    return MeshResponse(
+        answer="no response", sources=[], partial=True, unavailable_capabilities=[]
+    )
 
 
 @pytest_asyncio.fixture
@@ -138,19 +148,24 @@ async def mesh_runner(integration_registry):
 async def test_full_roundtrip_all_specialists_healthy(mesh_runner):
     """All 3 specialists healthy → valid MeshResponse with a non-empty answer."""
     runner, session_service = mesh_runner
-    response = await run_task(runner, session_service, "Summarize what Python is used for.")
+    response = await run_task(
+        runner, session_service, "Summarize what Python is used for."
+    )
     assert isinstance(response, MeshResponse)
     assert response.answer
 
 
 @pytest.mark.asyncio
-async def test_partial_response_when_specialist_offline(mesh_runner, integration_registry):
+async def test_partial_response_when_specialist_offline(
+    mesh_runner, integration_registry
+):
     """Mark CodeReviewAgent offline → MeshResponse.partial=True, unavailable=['code_review']."""
     runner, session_service = mesh_runner
     for _ in range(5):
         await integration_registry.update_liveness("CodeReviewAgent", success=False)
     response = await run_task(
-        runner, session_service,
+        runner,
+        session_service,
         "Find Python performance tips and review this code: x = [i for i in range(10)]",
     )
     assert response.partial is True
@@ -158,12 +173,26 @@ async def test_partial_response_when_specialist_offline(mesh_runner, integration
 
 
 @pytest.mark.asyncio
-async def test_platform_does_not_crash_when_all_offline(mesh_runner, integration_registry):
-    """All specialists offline → graceful partial response, no exception."""
+async def test_platform_does_not_crash_when_all_offline(
+    mesh_runner, integration_registry
+):
+    """All specialists offline → graceful partial response, no LLM call needed."""
     runner, session_service = mesh_runner
     for name in ["WebSearchAgent", "SummarizerAgent", "CodeReviewAgent"]:
         for _ in range(5):
             await integration_registry.update_liveness(name, success=False)
-    response = await run_task(runner, session_service, "any task")
+
+    async def _mock_llm(self, llm_request, stream=False):
+        yield LlmResponse(
+            content=types.Content(
+                role="model",
+                parts=[types.Part(text='{"original_task":"any task","subtasks":[]}')],
+            ),
+            turn_complete=True,
+        )
+
+    with patch.object(Gemini, "generate_content_async", _mock_llm):
+        response = await run_task(runner, session_service, "any task")
+
     assert response.partial is True
     assert response.answer

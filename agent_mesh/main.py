@@ -14,9 +14,12 @@ from agent_mesh.dispatcher import ParallelDispatcher
 from agent_mesh.synthesizer import build_synthesizer_agent
 from agent_mesh.specialists import (
     register_all_specialists,
-    WEB_SEARCH_AGENT, WEB_SEARCH_CAPABILITIES,
-    SUMMARIZER_AGENT, SUMMARIZER_CAPABILITIES,
-    CODE_REVIEW_AGENT, CODE_REVIEW_CAPABILITIES,
+    WEB_SEARCH_AGENT,
+    WEB_SEARCH_CAPABILITIES,
+    SUMMARIZER_AGENT,
+    SUMMARIZER_CAPABILITIES,
+    CODE_REVIEW_AGENT,
+    CODE_REVIEW_CAPABILITIES,
 )
 from agent_mesh.models import MeshResponse
 
@@ -83,7 +86,9 @@ async def main() -> None:
     # 8. Session setup
     user_id = "local_user"
     session_id = "cli_session"
-    if not await session_service.get_session(app_name="agent-mesh", user_id=user_id, session_id=session_id):
+    if not await session_service.get_session(
+        app_name="agent-mesh", user_id=user_id, session_id=session_id
+    ):
         await session_service.create_session(
             app_name="agent-mesh", user_id=user_id, session_id=session_id
         )
@@ -104,12 +109,18 @@ async def main() -> None:
                 run_config=RunConfig(max_llm_calls=20),
             ):
                 if event.is_final_response():
-                    raw = event.content.parts[0].text if event.content and event.content.parts else ""
+                    raw = (
+                        event.content.parts[0].text or ""
+                        if event.content and event.content.parts
+                        else ""
+                    )
                     try:
                         response = MeshResponse.model_validate_json(raw)
                         print(f"\n{response.answer}")
                         if response.partial:
-                            print(f"\n[Note: unavailable capabilities: {', '.join(response.unavailable_capabilities)}]")
+                            print(
+                                f"\n[Note: unavailable capabilities: {', '.join(response.unavailable_capabilities)}]"
+                            )
                     except Exception:
                         print(f"\n{raw}")
                     print()

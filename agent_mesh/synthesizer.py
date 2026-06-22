@@ -1,34 +1,66 @@
-from google.adk.agents import LlmAgent
-from agent_mesh.models import MeshResponse
-
-SYNTHESIZER_INSTRUCTION = """
-You are the response synthesizer for the Agent Mesh platform.
-
-Session state contains results from specialist agents under keys starting with "result_".
-Each result is a JSON SpecialistResult with fields: agent_name, capability, output, success, error.
-
-Also check "unavailable_capabilities" in session state for capabilities that had no healthy agent.
-
-Your job:
-1. Read all result_* keys from session state.
-2. Synthesize a single, coherent answer to the user's original task.
-3. List the agent names that contributed (sources).
-4. Set partial=true if ANY of these apply:
-   - No result_* keys exist in session state (nothing was dispatched)
-   - Any specialist result had success=false
-   - unavailable_capabilities in session state is non-empty
-5. List all unavailable_capabilities from session state.
-
-Return ONLY valid JSON matching the MeshResponse schema. No preamble, no markdown fences.
-"""
+import json
+from google.adk.agents import BaseAgent
+from google.adk.agents.invocation_context import InvocationContext
+from google.adk.events import Event
+from google.genai import types
+from typing import AsyncGenerator
+from agent_mesh.models import MeshResponse, SpecialistResult
 
 
-def build_synthesizer_agent(model: str = "gemini-2.5-flash") -> LlmAgent:
-    return LlmAgent(
+class BaseSynthesizer(BaseAgent):
+    async def _run_async_impl(
+        self, ctx: InvocationContext
+    ) -> AsyncGenerator[Event, None]:
+        results = []
+        for key, val in ctx.session.state.items():
+            if key.startswith("result_"):
+                try:
+                    results.append(SpecialistResult.model_validate_json(val))
+                except Exception:
+                    pass
+
+        unavailable_raw = ctx.session.state.get("unavailable_capabilities", "[]")
+        try:
+            unavailable = (
+                json.loads(unavailable_raw)
+                if isinstance(unavailable_raw, str)
+                else list(unavailable_raw)
+            )
+        except Exception:
+            unavailable = []
+
+        successful = [r for r in results if r.success]
+        partial = bool(
+            not results or any(not r.success for r in results) or unavailable
+        )
+
+        if successful:
+            answer = "\n\n".join(f"[{r.capability}] {r.output}" for r in successful)
+        else:
+            answer = (
+                "All specialists are currently unavailable."
+                if unavailable
+                else "No specialists were dispatched."
+            )
+
+        response = MeshResponse(
+            answer=answer,
+            sources=[r.agent_name for r in successful],
+            partial=partial,
+            unavailable_capabilities=unavailable,
+        )
+        ctx.session.state["mesh_response"] = response.model_dump()
+
+        yield Event(
+            author=self.name,
+            content=types.Content(
+                role="model", parts=[types.Part(text=response.model_dump_json())]
+            ),
+        )
+
+
+def build_synthesizer_agent() -> BaseSynthesizer:
+    return BaseSynthesizer(
         name="SynthesizerAgent",
-        model=model,
         description="Assembles parallel specialist results into a final structured response.",
-        instruction=SYNTHESIZER_INSTRUCTION,
-        output_schema=MeshResponse,
-        output_key="mesh_response",
     )
