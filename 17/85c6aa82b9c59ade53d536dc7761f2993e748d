@@ -1,0 +1,41 @@
+foundry.yaml
+  s_05091b91e0a1c1::t_d2f440cd9da50c 28-39
+  s_05091b91e0a1c1::t_0529d7596c58d4 5,11,16-27
+.beads/hooks/pre-commit
+  s_8df120ee3720ad::t_f09f7efda77a6f 34-36
+.github/workflows/deploy.yml
+  s_8df120ee3720ad::t_a7218762f6f98a 1,6,9,20
+  s_7a1473d5b34504::t_ce576dd4e86b46 2-5,7-8,10-19,21-31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.10",
+  "base_commit_sha": "1785c6aa82b9c59ade53d536dc7761f2993e748d",
+  "prompts": {},
+  "sessions": {
+    "s_05091b91e0a1c1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9b34fde7-8aae-46b8-bcb2-3038bd2b5175",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    },
+    "s_7a1473d5b34504": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fc202299-c982-4ad5-bbbf-8fde0bd084da",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    },
+    "s_8df120ee3720ad": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e02f62b7-8509-472b-9b60-db25f7c8a5ea",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
