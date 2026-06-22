@@ -19,9 +19,14 @@ from agent_mesh.specialists import (
 
 
 def build_pipeline() -> SequentialAgent:
-    # ponytail: :memory: because Agent Engine containers are ephemeral; specialists re-seed on each cold start
+    # Agent Engine containers are ephemeral; specialists re-seed on each cold start.
+    # Use a temp-file SQLite DB instead of ":memory:" because aiosqlite opens a
+    # new connection per registry method, and each ":memory:" connection gets an
+    # empty database.
     async def _init():
-        registry = CapabilityRegistry(db_path=":memory:")
+        registry = CapabilityRegistry(
+            db_path=os.getenv("AGENT_MESH_DB_PATH", "/tmp/agent-mesh/mesh.db")
+        )
         await registry.initialize()
         await register_all_specialists(registry)
         set_registry(registry)
