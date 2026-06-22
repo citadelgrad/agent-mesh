@@ -1,0 +1,39 @@
+version: 1
+
+profiles:
+  quick:
+    gates:
+      - id: lint
+        run: make lint
+      - id: test
+        run: make test
+  full:
+    gates:
+      - id: lint
+        run: make lint
+      - id: test
+        run: make test
+  ubs:
+    gates:
+      - id: ubs-scan
+        run: ubs --format=json --ci --fail-on-warning .
+
+schedules:
+  nightly:
+    profile: full
+    cron: '0 2 * * *'
+  ubs-weekly:
+    profile: ubs
+    cron: '0 8 * * 0'  # Sunday midnight PT
+
+integrations:
+  explain:
+    on_failure: true
+    model: claude-sonnet-4-6
+  agent:
+    on_failure: true
+    command: >-
+      claude -p "ubs scan failed. Read {run_dir}/result.json for findings and
+      {run_dir}/explanation.md for the AI summary. Fix all issues, create a branch
+      named fix/ubs-$(date +%Y%m%d), commit the fixes with a clear message, and
+      open a PR against main." --dangerously-skip-permissions
