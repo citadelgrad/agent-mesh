@@ -18,15 +18,22 @@ def test_router_instruction_calls_list_all_agents():
 
 
 @pytest.mark.asyncio
-async def test_list_healthy_empty_when_no_registry():
+async def test_list_healthy_bootstraps_when_no_registry(monkeypatch, tmp_path):
+    monkeypatch.setenv("AGENT_MESH_DB_PATH", str(tmp_path / "mesh.db"))
     set_registry(None)
     result = await list_healthy()
-    assert result == []
+    assert {agent["name"] for agent in result} == {
+        "CodeReviewAgent",
+        "SummarizerAgent",
+        "WebSearchAgent",
+    }
 
 
 @pytest.mark.asyncio
 async def test_list_healthy_returns_healthy_agents(registry, always_healthy):
-    await registry.register("WebAgent", "Does web search", ["web_search"], always_healthy)
+    await registry.register(
+        "WebAgent", "Does web search", ["web_search"], always_healthy
+    )
     set_registry(registry)
     try:
         result = await list_healthy()
