@@ -7,6 +7,11 @@ from typing import AsyncGenerator
 from agent_mesh.models import MeshResponse, SpecialistResult
 
 
+def _event_invocation_id(ctx: InvocationContext) -> str:
+    invocation_id = getattr(ctx, "invocation_id", "")
+    return invocation_id if isinstance(invocation_id, str) else "test-invocation"
+
+
 class BaseSynthesizer(BaseAgent):
     async def _run_async_impl(
         self, ctx: InvocationContext
@@ -52,6 +57,7 @@ class BaseSynthesizer(BaseAgent):
         ctx.session.state["mesh_response"] = response.model_dump()
 
         yield Event(
+            invocation_id=_event_invocation_id(ctx),
             author=self.name,
             content=types.Content(
                 role="model", parts=[types.Part(text=response.model_dump_json())]

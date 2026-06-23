@@ -12,6 +12,11 @@ from agent_mesh.models import TaskDecomposition, SpecialistResult, Subtask
 from agent_mesh.tools import TimeoutAgentTool
 
 
+def _event_invocation_id(ctx: InvocationContext) -> str:
+    invocation_id = getattr(ctx, "invocation_id", "")
+    return invocation_id if isinstance(invocation_id, str) else "test-invocation"
+
+
 class ParallelDispatcher(BaseAgent):
     """
     Reads task_decomposition from session.state, fans out to specialist agents
@@ -49,6 +54,7 @@ class ParallelDispatcher(BaseAgent):
             )
         except Exception as e:
             yield Event(
+                invocation_id=_event_invocation_id(ctx),
                 author=self.name,
                 content=types.Content(role="model", parts=[types.Part(text=f"Failed to parse task_decomposition: {e}")])
             )
@@ -77,6 +83,7 @@ class ParallelDispatcher(BaseAgent):
 
         summary = f"Dispatched {len(results)} subtasks. Unavailable: {unavailable or 'none'}"
         yield Event(
+            invocation_id=_event_invocation_id(ctx),
             author=self.name,
             content=types.Content(role="model", parts=[types.Part(text=summary)])
         )
