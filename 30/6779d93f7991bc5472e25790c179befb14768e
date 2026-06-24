@@ -1,0 +1,160 @@
+agent_mesh/dispatcher.py
+  s_3297ba74ffe931::t_2cf4f195bed882 155-156,163,180
+  s_3297ba74ffe931::t_58bc0761cb8814 2,10,15-16,23-37,44,48-51,55-56,65-83,105-110,118,127-129
+tests/test_remote.py
+  s_3297ba74ffe931::t_48610905746b3d 88-93
+  s_3297ba74ffe931::t_744452f193ab5d 1-87
+agent_mesh/catalog.py
+  s_3297ba74ffe931::t_ae41997ed3395a 1-3,6-7,12-19,38-45,112-113,115-120,122-128,140-141,148-157,159-161,163-181,185
+  s_3297ba74ffe931::t_a1b61691a8aa48 142-147,158,162
+  s_3297ba74ffe931::t_37baf5df4060db 5,9,11,20-37
+  s_b072aa65b612fc::t_2763071fb46862 4,8,10,46-111,114,121,129-139,182-184
+tests/test_catalog.py
+  s_b072aa65b612fc::t_aa0a68ffe54373 5,7-11,13,28,69-151
+  s_3297ba74ffe931::t_84cc788ebe69b5 1-4,6,12,14-27,29-68
+docs/superpowers/specs/2026-06-17-terraform-module-design.md
+  s_7a1473d5b34504::t_a3e79d36d27472 1-97
+docs/ops/iam-setup.md
+  s_b072aa65b612fc::t_4b58496c5fe215 1-14,17-20
+  s_b072aa65b612fc::t_bd920bf6bc4cf6 15-16
+.beads/interactions.jsonl
+  s_3297ba74ffe931::t_b4d175bda4a7cc 1
+  s_b072aa65b612fc::t_c60b4734831105 3
+  s_3297ba74ffe931::t_8ff7d1f9f0ff35 2
+  s_b072aa65b612fc::t_885eede3652cad 4
+agent_mesh/remote.py
+  s_3297ba74ffe931::t_27d35d47b2d90d 1-31
+tests/test_router_agent.py
+  s_3297ba74ffe931::t_1c84ac4a27de63 2,4-14,32-41
+  s_3297ba74ffe931::t_9efdd25b8d7d5a 23-24
+docs/plans/2026-06-23-feat-a2a-remote-agent-mesh-plan.md
+  s_3297ba74ffe931::t_9e97f713c8e697 20
+  s_3297ba74ffe931::t_faa9bd4476b18f 667
+  s_3297ba74ffe931::t_41486c8cd1fea3 95
+  s_3297ba74ffe931::t_18c83e9f2af99f 699
+  s_3297ba74ffe931::t_76dbeaf499ee7f 706-708,710-711,713-715,717
+  s_3297ba74ffe931::t_a62da35878f529 666,669
+  s_3297ba74ffe931::t_223251b698de54 31-60
+  s_3297ba74ffe931::t_2b05ae8b401e7e 1-10,62-94,96-98,105-126,129-130,133-139,141-142,144-156,159-188,192-205,212,241-267,324-334,340-341,383-388,390,397,403,420,436,446,461-469,540-548,555,575,595,612-658,661-665,668,675-677,695-696,698,700-705,719-741,744,759-760,787-790
+  s_3297ba74ffe931::t_dcd85c926b43b2 268-291,293-295,297-312,323
+  s_3297ba74ffe931::t_189f769a91ed70 127-128,131-132,140,143
+  s_3297ba74ffe931::t_e9d005856facba 220-226
+  s_3297ba74ffe931::t_8cd9551aaa8cab 292,296
+  s_3297ba74ffe931::t_053df794bed354 228-233,236-239
+  s_3297ba74ffe931::t_86b5118f31cedd 313-322
+  s_3297ba74ffe931::t_501985aba09897 342-371,378-382
+  s_3297ba74ffe931::t_2ed0900061d56f 680-682,684,686
+  s_3297ba74ffe931::t_c2b5b94e1d8207 471,476-477,483,491-492,500-502,509-511,527-539
+  s_3297ba74ffe931::t_a4231f5b46b7ab 670-672
+  s_3297ba74ffe931::t_a1148cdf5b7dc5 389,391-396,398-402,405-406,414,416-419,421-435,437-445,447-460
+  s_3297ba74ffe931::t_69771b66349893 549-554,556-561,569-574
+  s_3297ba74ffe931::t_1927dafe4e368c 24
+  s_3297ba74ffe931::t_70a7b22515302f 692,694
+  s_3297ba74ffe931::t_03fe114f65cf4e 683
+  s_3297ba74ffe931::t_f33367ca60e216 688,691,693
+  s_3297ba74ffe931::t_047ac651e227cd 102,104
+  s_3297ba74ffe931::t_c40c53ec195c31 678-679
+  s_3297ba74ffe931::t_a9ef51a262754e 709,712,716,718
+  s_3297ba74ffe931::t_efefb10dbaca60 576-594
+  s_3297ba74ffe931::t_671413c6d11d82 372-377
+  s_3297ba74ffe931::t_113bd8d77ac288 761,773-783
+  s_3297ba74ffe931::t_f915b04ff8a635 596-611
+  s_3297ba74ffe931::t_543c1f01efa3d9 689-690
+  s_3297ba74ffe931::t_4bebe547cacbc3 19
+  s_3297ba74ffe931::t_cfc0a109ac4bc3 673
+  s_3297ba74ffe931::t_13d39b870a24d1 189-191
+  s_3297ba74ffe931::t_c1e490ab758789 206-211
+  s_3297ba74ffe931::t_fdaabe09ee4c7a 687
+  s_3297ba74ffe931::t_a83f9f1595c7fd 11-18,21-23,25,28,30,61
+  s_3297ba74ffe931::t_21cf42a337cec8 99
+  s_3297ba74ffe931::t_6e767469e48330 674
+  s_3297ba74ffe931::t_98b48e958e792a 685
+  s_3297ba74ffe931::t_3a436ba67a07a1 751-758
+  s_3297ba74ffe931::t_ccfabd7cd20411 157-158
+  s_3297ba74ffe931::t_613ca4139b4c21 562-568
+  s_3297ba74ffe931::t_867a6e1695c782 659-660
+  s_3297ba74ffe931::t_90c7a68e21b15b 697
+  s_3297ba74ffe931::t_b0be642ddf718e 213-219,227,240
+  s_3297ba74ffe931::t_3114bad126cff5 234-235
+  s_3297ba74ffe931::t_11781fc934e8b6 335-339
+  s_3297ba74ffe931::t_24b2f6e1b675af 404,407-413,415
+  s_3297ba74ffe931::t_b9a28bf09da528 470,472-475,478-482,484-490,493-499,503-508,512-526
+  s_3297ba74ffe931::t_c5c27f3dac5183 26-27,29
+  s_3297ba74ffe931::t_9bc2d1329b1db5 772
+  s_3297ba74ffe931::t_844e08be8240a3 784-786
+  s_3297ba74ffe931::t_2102886f41c86a 100-101,103
+  s_3297ba74ffe931::t_c16e8fd3494b38 762-771
+  s_3297ba74ffe931::t_890ff6ad985cf5 742-743,745-750
+agent_mesh/tools.py
+  s_3297ba74ffe931::t_3febee74a72207 10-11,13-14,16,22,28,41
+tests/test_dispatcher.py
+  s_3297ba74ffe931::t_59e464f4867d7d 5,8-25,94-96,167,193,244-245,247-345
+agent_mesh/main.py
+  s_3297ba74ffe931::t_87e12d239383b5 9,42-43,88,94
+  s_b072aa65b612fc::t_1cf3f6f31cafbd 29-30,33
+docs/brainstorms/2026-06-22-a2a-agent-mesh-brainstorm.md
+  s_3297ba74ffe931::t_ccea7867080306 1-61,69-83,91-94
+  s_3297ba74ffe931::t_fb614292dbd6d3 62-68
+  s_3297ba74ffe931::t_89a44f66c818ad 84-90
+agent_mesh/router_agent.py
+  s_3297ba74ffe931::t_46ff83e59d2b5b 8,10-12,17,22-26
+Makefile
+  s_3297ba74ffe931::t_21638dcbb5082a 1,15-23
+docs/superpowers/plans/2026-06-17-terraform-module.md
+  s_7a1473d5b34504::t_f15b0fee43e747 1-415,417-418,425-461
+  s_7a1473d5b34504::t_4a1ef2a83bbe6d 416,419-424
+agent_mesh/models.py
+  s_3297ba74ffe931::t_65ee2bdbd9955f 9-11,15,34-36,43,52
+agent_mesh/specialists/code_review_deploy.py
+  s_3297ba74ffe931::t_8e2189250b4538 1-74
+agent_mesh/agent.py
+  s_b072aa65b612fc::t_82091a69efa60a 18
+  s_3297ba74ffe931::t_ef0762ded1dbd5 4,19,22,31-32
+pyproject.toml
+  s_3297ba74ffe931::t_199beadbc34a30 6
+  s_b072aa65b612fc::t_044bae1aaaaa38 15
+  s_3297ba74ffe931::t_29b0625bafc3d1 28-39,45
+tests/test_registry.py
+  s_3297ba74ffe931::t_fde1a41d63c4e9 6-8,13-17,21-24,28,31,34
+tests/test_integration.py
+  s_3297ba74ffe931::t_0573c0435cf0dc 17,106-107,116-117,132,142-143
+agent_mesh/registry.py
+  s_3297ba74ffe931::t_091a50ff726a9d 9-10,24,29-35,38-39,43-48,51,64-65
+  s_3297ba74ffe931::t_32eb88d4c2738a 4
+agent_mesh/specialists/__init__.py
+  s_3297ba74ffe931::t_6a90fe9d6b0883 1-3,7-9
+agent_mesh/synthesizer.py
+  s_3297ba74ffe931::t_f4d65876207a0f 43-48
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.11",
+  "base_commit_sha": "306779d93f7991bc5472e25790c179befb14768e",
+  "prompts": {},
+  "sessions": {
+    "s_3297ba74ffe931": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e7848bb5-4b3f-48a8-aa20-aa8692a83b0c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    },
+    "s_7a1473d5b34504": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fc202299-c982-4ad5-bbbf-8fde0bd084da",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    },
+    "s_b072aa65b612fc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edca64be-22de-4e61-a4af-9d2af92ae828",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
