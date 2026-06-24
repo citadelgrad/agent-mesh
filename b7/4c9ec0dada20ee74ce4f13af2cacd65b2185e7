@@ -1,0 +1,19 @@
+agent_mesh/catalog.py
+  s_b072aa65b612fc::t_c439c0b7189d7c 103-112,114-117
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.11",
+  "base_commit_sha": "b74c9ec0dada20ee74ce4f13af2cacd65b2185e7",
+  "prompts": {},
+  "sessions": {
+    "s_b072aa65b612fc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edca64be-22de-4e61-a4af-9d2af92ae828",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
