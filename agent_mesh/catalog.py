@@ -100,14 +100,21 @@ class AgentRegistryCatalog:
         specs = []
         for agent in resp.get("agents", []):
             name = agent.get("displayName", "")
-            skills = agent.get("agentSpec", {}).get("skills", [])
-            caps = [s["id"] for s in skills if "id" in s]
-            interfaces = agent.get("interfaces", [])
-            a2a_url = next(
-                (i["url"] for i in interfaces if i.get("protocolBinding") == "A2A"), None
-            )
+            # v1alpha: skills are top-level, not under agentSpec
+            caps = [s["id"] for s in agent.get("skills", []) if "id" in s]
+            # v1alpha: A2A URL is under protocols[].interfaces[] where type == "A2A_AGENT"
+            a2a_url = None
+            for protocol in agent.get("protocols", []):
+                if protocol.get("type") == "A2A_AGENT":
+                    interfaces = protocol.get("interfaces", [])
+                    if interfaces:
+                        a2a_url = interfaces[0].get("url")
+                    break
             if name and caps and a2a_url:
-                specs.append(RemoteSpec(name=name, capabilities=caps, a2a_url=a2a_url))
+                try:
+                    specs.append(RemoteSpec(name=name, capabilities=caps, a2a_url=a2a_url))
+                except ValueError:
+                    pass  # SSRF validator rejected URL — skip non-Vertex agents
         return specs
 
 
