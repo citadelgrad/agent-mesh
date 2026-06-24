@@ -14,13 +14,11 @@ from google.adk.sessions import InMemorySessionService
 from google.adk.tools import google_search
 from google.genai import types
 
-from agent_mesh.registry import CapabilityRegistry
-from agent_mesh.tools import set_registry, TimeoutAgentTool
+from agent_mesh import catalog
 from agent_mesh.router_agent import build_router_agent
 from agent_mesh.dispatcher import ParallelDispatcher
 from agent_mesh.synthesizer import build_synthesizer_agent
 from agent_mesh.specialists import (
-    register_all_specialists,
     WEB_SEARCH_CAPABILITIES,
     SUMMARIZER_CAPABILITIES,
     CODE_REVIEW_CAPABILITIES,
@@ -105,24 +103,9 @@ async def run_task(
 
 
 @pytest_asyncio.fixture
-async def integration_registry(tmp_path):
-    r = CapabilityRegistry(db_path=str(tmp_path / "integration.db"))
-    await r.initialize()
-    await register_all_specialists(r)
-    set_registry(r)
-    yield r
-    set_registry(None)
-
-
-@pytest_asyncio.fixture
-async def mesh_runner(integration_registry):
+async def mesh_runner():
+    catalog.seed(make_fresh_specialists())
     session_service = InMemorySessionService()
-    specialist_tools: dict[str, TimeoutAgentTool] = {}
-    for agent, caps in make_fresh_specialists():
-        tool = TimeoutAgentTool(agent=agent, timeout=30.0)
-        for cap in caps:
-            specialist_tools[cap] = tool
-
     pipeline = SequentialAgent(
         name="AgentMesh",
         description="Routes tasks to specialist agents and synthesizes results.",
@@ -130,8 +113,8 @@ async def mesh_runner(integration_registry):
             build_router_agent(),
             ParallelDispatcher(
                 name="ParallelDispatcher",
-                description="Fans out to healthy specialists in parallel.",
-                specialist_tools=specialist_tools,
+                description="Fans out to specialists in parallel.",
+                specialist_tools=catalog.build_tools(30.0),
             ),
             build_synthesizer_agent(),
         ],
@@ -146,7 +129,7 @@ async def mesh_runner(integration_registry):
 
 @pytest.mark.asyncio
 async def test_full_roundtrip_all_specialists_healthy(mesh_runner):
-    """All 3 specialists healthy → valid MeshResponse with a non-empty answer."""
+    """All 3 specialists available → valid MeshResponse with a non-empty answer."""
     runner, session_service = mesh_runner
     response = await run_task(
         runner, session_service, "Summarize what Python is used for."
@@ -156,31 +139,9 @@ async def test_full_roundtrip_all_specialists_healthy(mesh_runner):
 
 
 @pytest.mark.asyncio
-async def test_partial_response_when_specialist_offline(
-    mesh_runner, integration_registry
-):
-    """Mark CodeReviewAgent offline → MeshResponse.partial=True, unavailable=['code_review']."""
+async def test_platform_does_not_crash_when_no_subtasks(mesh_runner):
+    """Router returns no subtasks → graceful response, no crash."""
     runner, session_service = mesh_runner
-    for _ in range(5):
-        await integration_registry.update_liveness("CodeReviewAgent", success=False)
-    response = await run_task(
-        runner,
-        session_service,
-        "Find Python performance tips and review this code: x = [i for i in range(10)]",
-    )
-    assert response.partial is True
-    assert "code_review" in response.unavailable_capabilities
-
-
-@pytest.mark.asyncio
-async def test_platform_does_not_crash_when_all_offline(
-    mesh_runner, integration_registry
-):
-    """All specialists offline → graceful partial response, no LLM call needed."""
-    runner, session_service = mesh_runner
-    for name in ["WebSearchAgent", "SummarizerAgent", "CodeReviewAgent"]:
-        for _ in range(5):
-            await integration_registry.update_liveness(name, success=False)
 
     async def _mock_llm(self, llm_request, stream=False):
         yield LlmResponse(
@@ -194,5 +155,4 @@ async def test_platform_does_not_crash_when_all_offline(
     with patch.object(Gemini, "generate_content_async", _mock_llm):
         response = await run_task(runner, session_service, "any task")
 
-    assert response.partial is True
     assert response.answer

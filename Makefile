@@ -1,4 +1,4 @@
-.PHONY: run test lint install jaeger
+.PHONY: run test lint install jaeger deploy-code-review undeploy-code-review
 
 install:
 	uv sync
@@ -11,6 +11,16 @@ test:
 
 lint:
 	uv run ruff check agent_mesh/
+
+deploy-code-review:
+	uv run --group deploy python -m agent_mesh.specialists.code_review_deploy
+
+undeploy-code-review:
+	@if [ -z "$$AGENT_ENGINE_ID" ]; then echo "Set AGENT_ENGINE_ID in .envrc"; exit 1; fi
+	uv run --group deploy python -c "\
+import vertexai, os; from vertexai import agent_engines; \
+vertexai.init(project=os.environ['GOOGLE_CLOUD_PROJECT'], location=os.environ['GOOGLE_CLOUD_LOCATION']); \
+agent_engines.get(os.environ['AGENT_ENGINE_ID']).delete()"
 
 jaeger:
 	docker run -d --name jaeger \

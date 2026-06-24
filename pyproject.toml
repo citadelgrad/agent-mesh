@@ -3,7 +3,7 @@ name = "agent-mesh"
 version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
-    "google-adk>=1.25.0",
+    "google-adk[a2a]>=1.25.0",
     "google-genai",
     "pydantic>=2.0",
     "aiosqlite",
@@ -12,6 +12,7 @@ dependencies = [
     "opentelemetry-sdk",
     "opentelemetry-exporter-otlp",
     "openinference-instrumentation-google-adk",
+    "google-api-python-client>=2.197.0",
 ]
 
 [build-system]
@@ -24,9 +25,22 @@ include = ["agent_mesh*"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "pytest-mock",
+    "cloudpickle",
+]
+deploy = [
+    "google-cloud-aiplatform[reasoningengine,adk]>=1.93.0",
+    "cloudpickle",
+]
+
 [tool.uv]
 dev-dependencies = [
     "pytest",
     "pytest-asyncio",
     "pytest-mock",
+    "cloudpickle",
 ]

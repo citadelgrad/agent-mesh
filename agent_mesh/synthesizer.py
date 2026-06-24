@@ -40,7 +40,12 @@ class BaseSynthesizer(BaseAgent):
         )
 
         if successful:
-            answer = "\n\n".join(f"[{r.capability}] {r.output}" for r in successful)
+            # ponytail: H1 — delimiters prevent a remote agent's output from spoofing
+            # synthesizer formatting (e.g. injecting fake [capability] headers).
+            answer = "\n\n".join(
+                f'<specialist_output capability="{r.capability}">\n{r.output}\n</specialist_output>'
+                for r in successful
+            )
         else:
             answer = (
                 "All specialists are currently unavailable."

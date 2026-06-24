@@ -6,21 +6,18 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 # Session state key conventions:
-# 'task_decomposition'     → TaskDecomposition JSON  — written by RouterAgent, read by ParallelDispatcher
-# 'result_{agent_name}'   → SpecialistResult JSON   — written by ParallelDispatcher, read by SynthesizerAgent
-# 'mesh_response'          → MeshResponse JSON       — written by SynthesizerAgent, read by main.py
+# 'task_decomposition'     → TaskDecomposition JSON  — written by RouterAgent
+# 'result_{agent_name}'   → SpecialistResult JSON   — written by ParallelDispatcher
+# 'mesh_response'          → MeshResponse JSON       — written by SynthesizerAgent
 
 
 class AgentRecord(BaseModel):
+    """Legacy: used by registry.py (optional local fallback). Not on the active routing path."""
     name: str
     description: str
     capabilities: list[str]
-    status: Literal["healthy", "degraded", "offline"] = "healthy"
     timeout_seconds: float = 30.0
-    last_checked_at: datetime | None = None
     registered_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    consecutive_failures: int = 0
-    consecutive_successes: int = 0
 
 
 class Subtask(BaseModel):
@@ -34,12 +31,16 @@ class TaskDecomposition(BaseModel):
     original_task: str
 
 
+ErrorKind = Literal["timeout", "http_error", "card_unreachable", "capability_mismatch", "unknown"]
+
+
 class SpecialistResult(BaseModel):
     agent_name: str
     capability: str
     output: str
     success: bool
     error: str | None = None
+    error_kind: ErrorKind | None = None
     duration_seconds: float = 0.0
 
 
@@ -48,6 +49,6 @@ class MeshResponse(BaseModel):
     sources: list[str] = Field(description="Agent names that contributed to this answer")
     partial: bool = Field(description="True when one or more specialists were unavailable")
     unavailable_capabilities: list[str] = Field(
-        description="List of capabilities that could not be fulfilled due to offline agents",
+        description="List of capabilities that could not be fulfilled",
         default_factory=list,
     )

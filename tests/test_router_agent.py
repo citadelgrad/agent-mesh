@@ -1,6 +1,17 @@
 import pytest
+from unittest.mock import MagicMock
 from agent_mesh.router_agent import build_router_agent, ROUTER_INSTRUCTION
-from agent_mesh.tools import list_healthy, set_registry
+from agent_mesh.tools import list_all_agents
+from agent_mesh import catalog
+
+
+@pytest.fixture(autouse=True)
+def reset_catalog():
+    yield
+    catalog._locals = []
+    catalog._cache = []
+    catalog._refreshed_at = 0.0
+    catalog._lock = None
 
 
 def test_router_agent_name_and_output_key():
@@ -9,8 +20,8 @@ def test_router_agent_name_and_output_key():
     assert agent.output_key == "task_decomposition"
 
 
-def test_router_instruction_marks_missing_capability_unavailable():
-    assert "UNAVAILABLE" in ROUTER_INSTRUCTION
+def test_router_instruction_does_not_fabricate_capabilities():
+    assert "fabricate" in ROUTER_INSTRUCTION
 
 
 def test_router_instruction_calls_list_all_agents():
@@ -18,42 +29,13 @@ def test_router_instruction_calls_list_all_agents():
 
 
 @pytest.mark.asyncio
-async def test_list_healthy_bootstraps_when_no_registry(monkeypatch, tmp_path):
-    monkeypatch.setenv("AGENT_MESH_DB_PATH", str(tmp_path / "mesh.db"))
-    set_registry(None)
-    result = await list_healthy()
-    assert {agent["name"] for agent in result} == {
-        "CodeReviewAgent",
-        "SummarizerAgent",
-        "WebSearchAgent",
-    }
-
-
-@pytest.mark.asyncio
-async def test_list_healthy_returns_healthy_agents(registry, always_healthy):
-    await registry.register(
-        "WebAgent", "Does web search", ["web_search"], always_healthy
-    )
-    set_registry(registry)
-    try:
-        result = await list_healthy()
-        assert any(r["name"] == "WebAgent" for r in result)
-        assert all({"name", "capabilities", "status"} <= r.keys() for r in result)
-    finally:
-        set_registry(None)
-
-
-@pytest.mark.asyncio
-async def test_list_healthy_excludes_offline_agents(registry):
-    async def failing():
-        return False
-
-    await registry.register("OfflineAgent", "Goes offline", ["cap_x"], failing)
-    for _ in range(5):
-        await registry.update_liveness("OfflineAgent", success=False)
-    set_registry(registry)
-    try:
-        result = await list_healthy()
-        assert not any(r["name"] == "OfflineAgent" for r in result)
-    finally:
-        set_registry(None)
+async def test_list_all_agents_returns_seeded_catalog():
+    a = MagicMock()
+    a.name = "WebAgent"
+    a.description = "Does web search"
+    catalog.seed([(a, ["web_search"])])
+    result = await list_all_agents()
+    assert len(result) == 1
+    assert result[0]["name"] == "WebAgent"
+    assert result[0]["capabilities"] == ["web_search"]
+    assert {"name", "description", "capabilities"} <= result[0].keys()
