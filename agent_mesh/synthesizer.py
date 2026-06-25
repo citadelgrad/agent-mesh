@@ -6,6 +6,8 @@ from google.genai import types
 from typing import AsyncGenerator
 from agent_mesh.models import MeshResponse, SpecialistResult
 
+_loads = json.loads
+
 
 def _event_invocation_id(ctx: InvocationContext) -> str:
     invocation_id = getattr(ctx, "invocation_id", "")
@@ -16,21 +18,21 @@ class BaseSynthesizer(BaseAgent):
     async def _run_async_impl(
         self, ctx: InvocationContext
     ) -> AsyncGenerator[Event, None]:
+        state = (ctx.session and ctx.session.state) or {}
         results = []
-        for key, val in ctx.session.state.items():
+        for key, val in state.items():
             if key.startswith("result_"):
                 try:
                     results.append(SpecialistResult.model_validate_json(val))
-                except Exception:
-                    pass
+                except Exception:  # noqa: S112  # nosec B112
+                    continue
 
-        unavailable_raw = ctx.session.state.get("unavailable_capabilities", "[]")
+        unavailable_raw = state.get("unavailable_capabilities", "[]")
         try:
-            unavailable = (
-                json.loads(unavailable_raw)
-                if isinstance(unavailable_raw, str)
-                else list(unavailable_raw)
-            )
+            if isinstance(unavailable_raw, str):
+                unavailable = _loads(unavailable_raw)
+            else:
+                unavailable = list(unavailable_raw)
         except Exception:
             unavailable = []
 

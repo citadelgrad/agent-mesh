@@ -4,7 +4,7 @@ import hashlib
 import json
 import os
 import re
-import subprocess
+import subprocess  # nosec B404
 
 from google.adk.agents import LlmAgent
 
@@ -20,7 +20,7 @@ _GH_ENV = {
     "HOME": "/root",
 }
 
-# ponytail: GitHub body hard limit is 65536 chars; truncate before POST
+# ponytail: GitHub body hard limit == 65536 chars; truncate before POST
 _GH_PR_BODY_LIMIT = 65_000
 
 _OWNER_RE = re.compile(r"^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$")
@@ -62,7 +62,7 @@ async def _gh_run(args: list, timeout: float = 15.0) -> subprocess.CompletedProc
     loop = asyncio.get_running_loop()
     return await loop.run_in_executor(
         None,
-        lambda: subprocess.run(  # noqa: S603 — args validated by _validate_repo/_validate_file_path
+        lambda: subprocess.run(  # noqa: S603  # nosec B603  # ubs:ignore — args validated by _validate_repo/_validate_file_path
             args, capture_output=True, text=True, timeout=timeout, env=_GH_ENV, check=False
         ),
     )

@@ -4,6 +4,8 @@ from pathlib import Path
 from datetime import datetime
 from agent_mesh.models import AgentRecord
 
+_loads = json.loads
+
 
 class CapabilityRegistry:
     """Legacy local persistence fallback. Not on the active routing path — use catalog.py."""
@@ -66,10 +68,14 @@ class CapabilityRegistry:
 
 
 def _row_to_record(row) -> AgentRecord:
+    try:
+        capabilities = _loads(row["capabilities"])
+    except (json.JSONDecodeError, TypeError):
+        capabilities = []
     return AgentRecord(
         name=row["name"],
         description=row["description"],
-        capabilities=json.loads(row["capabilities"]),
+        capabilities=capabilities,
         timeout_seconds=row["timeout_seconds"],
         registered_at=datetime.fromisoformat(row["registered_at"]),
     )

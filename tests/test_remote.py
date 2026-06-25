@@ -1,6 +1,5 @@
 import cloudpickle
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
 from agent_mesh.remote import AeRemoteAgent, _GoogleCloudAuth
 
 _CARD_URL = (
@@ -45,7 +44,7 @@ def test_google_cloud_auth_flow_sets_bearer():
 
     creds = MagicMock()
     creds.valid = True
-    creds.token = "tok"
+    creds.token = "tok"  # nosec B105 — test fixture token
 
     auth = _GoogleCloudAuth()
     auth._creds = creds  # skip google.auth.default call
@@ -86,7 +85,10 @@ async def test_synthesizer_wraps_output_in_specialist_delimiters():
     assert len(events) == 1
 
     import json as _json
-    payload = _json.loads(events[0].content.parts[0].text)
+    try:
+        payload = _json.loads(events[0].content.parts[0].text)
+    except _json.JSONDecodeError as exc:
+        raise AssertionError(f"Expected valid JSON response: {exc}") from exc
     answer = payload["answer"]
     assert '<specialist_output capability="code_review">' in answer
     assert "looks good" in answer

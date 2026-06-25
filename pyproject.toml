@@ -25,6 +25,13 @@ include = ["agent_mesh*"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 
+[tool.bandit]
+exclude_dirs = ["tests"]
+skips = ["B101"]
+
+[tool.ruff.lint]
+ignore = ["F811"]
+
 [dependency-groups]
 dev = [
     "ruff",

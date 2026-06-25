@@ -1,5 +1,4 @@
 import asyncio
-import logging
 import time
 import json
 from google.adk.agents import BaseAgent
@@ -11,9 +10,6 @@ from pydantic import PrivateAttr, model_validator
 from typing import AsyncGenerator
 from agent_mesh.models import TaskDecomposition, SpecialistResult, Subtask
 from agent_mesh.tools import TimeoutAgentTool
-
-logger = logging.getLogger(__name__)
-
 
 def _event_invocation_id(ctx: InvocationContext) -> str:
     invocation_id = getattr(ctx, "invocation_id", "")
@@ -29,8 +25,6 @@ def _build_capability_map(
     Remote-remote ties are already broken alphabetically in _get_remote_tools."""
     merged = dict(remote_tools)
     for cap, tool in local_tools.items():
-        if cap in merged:
-            logger.info("local agent displaces remote for capability %r", cap)
         merged[cap] = tool  # local overwrites remote unconditionally
     return merged
 
@@ -84,7 +78,8 @@ class ParallelDispatcher(BaseAgent):
     async def _run_async_impl(
         self, ctx: InvocationContext
     ) -> AsyncGenerator[Event, None]:
-        raw = ctx.session.state.get("task_decomposition", "{}")
+        state = (ctx.session and ctx.session.state) or {}
+        raw = state.get("task_decomposition", "{}")
         if isinstance(raw, str):
             stripped = raw.strip()
             if stripped.startswith("```"):
