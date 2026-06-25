@@ -21,7 +21,7 @@ import sys
 
 import cloudpickle  # type: ignore  # verify pickling before deploy
 import vertexai  # type: ignore  # google-cloud-aiplatform[reasoningengine,adk]
-from a2a.types import AgentCard, AgentCapabilities, AgentSkill
+from a2a.types import AgentCard, AgentCapabilities, AgentSkill, TransportProtocol
 from vertexai._genai import types  # type: ignore
 
 from agent_mesh.specialists.security_review import (
@@ -42,6 +42,7 @@ def _card() -> AgentCard:
         description=SECURITY_REVIEW_AGENT.description,
         url="",  # Agent Engine fills this in after deploy
         version="1.0.0",
+        preferred_transport=TransportProtocol.http_json,
         capabilities=AgentCapabilities(streaming=False),
         default_input_modes=["text/plain"],
         default_output_modes=["text/plain"],
@@ -57,6 +58,31 @@ def _card() -> AgentCard:
     )
 
 
+def _security_review_runner():
+    from google.adk.artifacts.in_memory_artifact_service import InMemoryArtifactService
+    from google.adk.auth.credential_service.in_memory_credential_service import (
+        InMemoryCredentialService,
+    )
+    from google.adk.memory.in_memory_memory_service import InMemoryMemoryService
+    from google.adk.runners import Runner
+    from google.adk.sessions.in_memory_session_service import InMemorySessionService
+
+    return Runner(
+        app_name=SECURITY_REVIEW_AGENT.name or "security_review_agent",
+        agent=SECURITY_REVIEW_AGENT,
+        artifact_service=InMemoryArtifactService(),
+        session_service=InMemorySessionService(),
+        memory_service=InMemoryMemoryService(),
+        credential_service=InMemoryCredentialService(),
+    )
+
+
+def _security_review_executor():
+    from google.adk.a2a.executor.a2a_agent_executor import A2aAgentExecutor
+
+    return A2aAgentExecutor(runner=_security_review_runner)
+
+
 def main() -> None:
     # ponytail: cloudpickle smoke test — Agent Engine pickles the agent before shipping.
     # Fail fast here rather than after a multi-minute upload.
@@ -68,8 +94,12 @@ def main() -> None:
 
     from vertexai.preview.reasoning_engines import A2aAgent  # type: ignore
 
+    vertexai.init(project=PROJECT, location=REGION, staging_bucket=BUCKET)
     client = vertexai.Client(project=PROJECT, location=REGION)
-    app = A2aAgent(agent=SECURITY_REVIEW_AGENT, agent_card=_card())
+    app = A2aAgent(
+        agent_card=_card(),
+        agent_executor_builder=_security_review_executor,
+    )
     config = {
         "display_name": "security-review-agent",
         "requirements": ["google-adk[a2a]>=1.25.0", "google-genai"],
