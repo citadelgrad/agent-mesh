@@ -154,7 +154,7 @@ def main() -> None:
             "google-genai",
             "pydantic>=2.0",
         ],
-        "extra_packages": ["installation_scripts/install_gh.sh"],
+        "extra_packages": ["agent_mesh", "installation_scripts/install_gh.sh"],
         "build_options": {"installation_scripts": ["installation_scripts/install_gh.sh"]},
         "env_vars": {"GH_TOKEN": GH_TOKEN},
         "staging_bucket": BUCKET,

@@ -137,6 +137,7 @@ def main() -> None:
     engine = agent_engines.create(
         app,
         display_name="code-review-agent",
+        extra_packages=["agent_mesh"],
         requirements=[
             "a2a-sdk[http-server]>=0.3.26",
             "cloudpickle",
