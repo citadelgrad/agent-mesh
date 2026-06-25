@@ -1,0 +1,23 @@
+agent_mesh/specialists/security_review.py
+  s_824d4af98aa501::t_9777e00e8e9661 7
+  s_824d4af98aa501::t_e80f4324606a95 65
+  s_824d4af98aa501::t_cfb01e4bca4091 23
+.beads/issues.jsonl
+  s_824d4af98aa501::t_68ebdeba519ec7 2-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.13",
+  "base_commit_sha": "08cae3c4ddc368b96bc8f5c7b0a4d76fb2f3d450",
+  "prompts": {},
+  "sessions": {
+    "s_824d4af98aa501": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ea496e1f-3253-4c90-8226-27121f2084fc",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
