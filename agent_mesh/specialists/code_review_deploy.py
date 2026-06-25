@@ -13,11 +13,11 @@ Prints the card URL to stdout — paste into .envrc as AGENT_MESH_CODE_REVIEW_CA
 
 import os
 import sys
+import inspect
 
 import cloudpickle  # type: ignore  # verify pickling before deploy
 import vertexai  # type: ignore  # google-cloud-aiplatform[reasoningengine,adk]
 from a2a.types import AgentCard, AgentCapabilities, AgentSkill, TransportProtocol
-from a2a.utils.proto_utils import ToProto
 from vertexai import agent_engines  # type: ignore
 from vertexai.preview.reasoning_engines import A2aAgent  # type: ignore
 
@@ -26,6 +26,50 @@ from agent_mesh.specialists.code_review import CODE_REVIEW_AGENT, CODE_REVIEW_CA
 PROJECT = os.environ["GOOGLE_CLOUD_PROJECT"]
 REGION = os.environ["GOOGLE_CLOUD_LOCATION"]
 BUCKET = os.environ["GOOGLE_CLOUD_STAGING_BUCKET"]
+
+
+def _needs_pydantic_agent_card() -> bool:
+    for frame in inspect.stack(context=0):
+        module = frame.frame.f_globals.get("__name__", "")
+        if module.startswith("cloudpickle"):
+            return True
+        if module.endswith("templates.a2a") and frame.function in {
+            "__init__",
+            "clone",
+            "set_up",
+        }:
+            return True
+    return False
+
+
+class _DeployA2aAgent(A2aAgent):
+    def clone(self):
+        import copy
+
+        return _DeployA2aAgent(
+            agent_card=copy.deepcopy(self.__dict__["_agent_card"]),
+            task_store_builder=self._tmpl_attrs.get("task_store_builder"),
+            task_store_kwargs=self._tmpl_attrs.get("task_store_kwargs"),
+            agent_executor_kwargs=self._tmpl_attrs.get("agent_executor_kwargs"),
+            agent_executor_builder=self._tmpl_attrs.get("agent_executor_builder"),
+            request_handler_kwargs=self._tmpl_attrs.get("request_handler_kwargs"),
+            request_handler_builder=self._tmpl_attrs.get("request_handler_builder"),
+            extended_agent_card=self._tmpl_attrs.get("extended_agent_card"),
+        )
+
+    @property
+    def agent_card(self):
+        card = self.__dict__["_agent_card"]
+        if _needs_pydantic_agent_card() or hasattr(card, "DESCRIPTOR"):
+            return card
+
+        from a2a.utils.proto_utils import ToProto
+
+        return ToProto.agent_card(card)
+
+    @agent_card.setter
+    def agent_card(self, card):
+        self.__dict__["_agent_card"] = card
 
 
 def _card() -> AgentCard:
@@ -86,8 +130,8 @@ def main() -> None:
 
     vertexai.init(project=PROJECT, location=REGION, staging_bucket=BUCKET)
 
-    app = A2aAgent(
-        agent_card=ToProto.agent_card(_card()),
+    app = _DeployA2aAgent(
+        agent_card=_card(),
         agent_executor_builder=_code_review_executor,
     )
     engine = agent_engines.create(
