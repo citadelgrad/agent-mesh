@@ -171,6 +171,9 @@ def main() -> None:
         print(f"Created: {resource_name}")
         print(f"→ Add to GitHub secrets: SECURITY_REVIEW_ENGINE_ID={resource_name}")
 
+    engine_id = resource_name.rsplit("/", 1)[-1]
+    print(f"engine_id: {engine_id}")
+
     card_url = (
         f"https://{REGION}-aiplatform.googleapis.com"
         f"/v1beta1/{resource_name}/a2a/v1/card"
