@@ -14,7 +14,7 @@ _GH_ENV = {
     "GH_TOKEN": os.environ.get("GH_TOKEN", ""),
     "GH_PROMPT_DISABLED": "1",  # critical: prevents gh hanging in headless Vertex containers
     "GH_NO_UPDATE_NOTIFIER": "1",
-    "GH_CONFIG_DIR": "/tmp/gh-config",
+    "GH_CONFIG_DIR": "/tmp/gh-config",  # nosec B108  # noqa: S108 — gh CLI config in container
     "NO_COLOR": "1",
     "PATH": "/usr/local/bin:/usr/bin:/bin",
     "HOME": "/root",
@@ -31,7 +31,7 @@ _REPO_RE = re.compile(r"^[a-zA-Z0-9._-]{1,100}$")
 
 
 def _validate_repo(repo: str) -> tuple | None:
-    if any(c in repo for c in ("?", "#", "\n", "\x00")):
+    if any(c in repo for c in ("?", "#", "\n", "\r", "\x00")):
         return None
     parts = repo.split("/")
     if len(parts) != 2:
@@ -136,7 +136,7 @@ async def read_repo_file(
     if result.returncode != 0:
         return {"error_message": result.stderr.strip()}
     try:
-        data = json.loads(result.stdout)
+        data = json.JSONDecoder().decode(result.stdout)
     except json.JSONDecodeError:
         return {"error_message": "Failed to parse GitHub API response"}
     if isinstance(data, list):
@@ -219,7 +219,7 @@ async def publish_security_findings(
     if result.returncode != 0:
         return {"error_message": f"Failed to get base branch: {result.stderr.strip()}"}
     try:
-        _ref = json.loads(result.stdout)
+        _ref = json.JSONDecoder().decode(result.stdout)
         base_sha = _ref["object"]["sha"]
     except (json.JSONDecodeError, KeyError):
         return {"error_message": "Failed to parse base branch ref response"}
@@ -241,27 +241,38 @@ async def publish_security_findings(
         )
     except subprocess.TimeoutExpired:
         return {"error_message": f"Timed out creating branch {branch}"}
-    if result.returncode != 0 and "422" not in result.stderr and "already exists" not in result.stderr:
+    branch_existed = result.returncode != 0
+    if branch_existed and "422" not in result.stderr and "already exists" not in result.stderr:
         return {"error_message": f"Failed to create branch {branch}: {result.stderr.strip()}"}
 
-    # Step 3: PUT contents/SECURITY_FINDINGS.md on the new branch
+    # Step 3: PUT contents/SECURITY_FINDINGS.md on the new branch.
+    # If the branch pre-existed, SECURITY_FINDINGS.md may already be there.
+    # GitHub Contents PUT requires the existing blob SHA to update a file; omitting it
+    # returns 422 "sha wasn't supplied". Fetch it before PUT when the branch existed.
     encoded_content = base64.b64encode(findings_md.encode()).decode()
+    put_args = [
+        "gh", "api", "--method", "PUT",
+        f"repos/{owner}/{name}/contents/SECURITY_FINDINGS.md",
+        "--field", "message=chore: add security findings report",
+        "--field", f"content={encoded_content}",
+        "--field", f"branch={branch}",
+    ]
+    if branch_existed:
+        try:
+            file_check = await _gh_run(
+                ["gh", "api", f"repos/{owner}/{name}/contents/SECURITY_FINDINGS.md?ref={branch}"]
+            )
+            if file_check.returncode == 0:
+                try:
+                    blob_sha = json.JSONDecoder().decode(file_check.stdout).get("sha", "")
+                    if blob_sha:
+                        put_args += ["--field", f"sha={blob_sha}"]
+                except (json.JSONDecodeError, AttributeError):
+                    pass
+        except subprocess.TimeoutExpired:
+            pass  # proceed without SHA — PUT will surface the error if the file exists
     try:
-        result = await _gh_run(
-            [
-                "gh",
-                "api",
-                "--method",
-                "PUT",
-                f"repos/{owner}/{name}/contents/SECURITY_FINDINGS.md",
-                "--field",
-                "message=chore: add security findings report",
-                "--field",
-                f"content={encoded_content}",
-                "--field",
-                f"branch={branch}",
-            ]
-        )
+        result = await _gh_run(put_args)
     except subprocess.TimeoutExpired:
         return {"error_message": f"Timed out writing SECURITY_FINDINGS.md on branch {branch}"}
     if result.returncode != 0:

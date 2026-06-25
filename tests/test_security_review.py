@@ -46,14 +46,14 @@ def test_validate_repo_invalid():
 
 
 def test_validate_file_path_valid():
-    assert _validate_file_path("src/foo.py") is True
-    assert _validate_file_path("dir/sub/file.ts") is True
+    assert _validate_file_path("src/foo.py")
+    assert _validate_file_path("dir/sub/file.ts")
 
 
 def test_validate_file_path_traversal():
-    assert _validate_file_path("../etc/passwd") is False
-    assert _validate_file_path("/etc/passwd") is False
-    assert _validate_file_path("a/../b") is False
+    assert not _validate_file_path("../etc/passwd")
+    assert not _validate_file_path("/etc/passwd")
+    assert not _validate_file_path("a/../b")
 
 
 # --- list_repo_tree ---
@@ -64,7 +64,7 @@ async def test_list_repo_tree_success():
     with patch(PATCH, return_value=_mock_proc(stdout="src/foo.py\ntests/bar.py\n")):
         result = await list_repo_tree("org/repo")
     assert result["files"] == ["src/foo.py", "tests/bar.py"]
-    assert result.get("truncated") is False
+    assert not result.get("truncated")
 
 
 @pytest.mark.asyncio
@@ -81,7 +81,7 @@ async def test_list_repo_tree_500_cap():
     with patch(PATCH, return_value=_mock_proc(stdout=stdout)):
         result = await list_repo_tree("org/repo")
     assert len(result["files"]) == 500
-    assert result["truncated"] is True
+    assert result["truncated"]
 
 
 @pytest.mark.asyncio
@@ -179,15 +179,21 @@ async def test_publish_success():
 @pytest.mark.asyncio
 async def test_publish_branch_already_exists():
     sha_resp = json.dumps({"object": {"sha": "deadbeef123"}})
+    file_check_resp = json.dumps({"sha": "existingblobsha123", "content": ""})
     mocks = [
-        _mock_proc(stdout=sha_resp),
-        _mock_proc(returncode=1, stderr="422 already exists"),
-        _mock_proc(returncode=0),
-        _mock_proc(returncode=0, stdout="https://github.com/org/repo/pull/1"),
+        _mock_proc(stdout=sha_resp),                                              # step 1: base SHA
+        _mock_proc(returncode=1, stderr="422 already exists"),                    # step 2: branch exists
+        _mock_proc(stdout=file_check_resp),                                       # step 3a: GET file SHA
+        _mock_proc(returncode=0),                                                 # step 3: PUT with sha
+        _mock_proc(returncode=0, stdout="https://github.com/org/repo/pull/1"),    # step 4: PR
     ]
-    with patch(PATCH, side_effect=mocks):
+    with patch(PATCH, side_effect=mocks) as mock_run:
         result = await publish_security_findings("org/repo", "# Findings\n- issue")
     assert "pr_url" in result
+    assert mock_run.call_count == 5
+    # Verify the PUT call included the blob sha from the file check
+    put_call = mock_run.call_args_list[3]
+    assert "sha=existingblobsha123" in " ".join(put_call.args[0])
 
 
 @pytest.mark.asyncio
@@ -238,10 +244,10 @@ async def test_publish_invalid_repo():
 @pytest.mark.asyncio
 async def test_health_check_success():
     with patch(PATCH, return_value=_mock_proc(returncode=0, stdout="gh version 2.69.0")):
-        assert await security_review_health_check() is True
+        assert await security_review_health_check()
 
 
 @pytest.mark.asyncio
 async def test_health_check_failure():
     with patch(PATCH, side_effect=FileNotFoundError):
-        assert await security_review_health_check() is False
+        assert not await security_review_health_check()
