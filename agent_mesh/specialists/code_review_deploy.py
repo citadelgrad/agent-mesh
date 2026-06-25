@@ -17,6 +17,7 @@ import sys
 import cloudpickle  # type: ignore  # verify pickling before deploy
 import vertexai  # type: ignore  # google-cloud-aiplatform[reasoningengine,adk]
 from a2a.types import AgentCard, AgentCapabilities, AgentSkill, TransportProtocol
+from a2a.utils.proto_utils import ToProto
 from vertexai import agent_engines  # type: ignore
 from vertexai.preview.reasoning_engines import A2aAgent  # type: ignore
 
@@ -86,13 +87,20 @@ def main() -> None:
     vertexai.init(project=PROJECT, location=REGION, staging_bucket=BUCKET)
 
     app = A2aAgent(
-        agent_card=_card(),
+        agent_card=ToProto.agent_card(_card()),
         agent_executor_builder=_code_review_executor,
     )
     engine = agent_engines.create(
         app,
         display_name="code-review-agent",
-        requirements=["google-adk[a2a]>=1.25.0", "google-genai"],
+        requirements=[
+            "a2a-sdk[http-server]>=0.3.26",
+            "cloudpickle",
+            "google-adk[a2a]>=1.25.0",
+            "google-cloud-aiplatform[reasoningengine,adk]>=1.93.0",
+            "google-genai",
+            "pydantic>=2.0",
+        ],
         identity_type="AGENT_IDENTITY",
     )
 

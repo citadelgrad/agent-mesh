@@ -41,6 +41,7 @@ dev = [
     "cloudpickle",
 ]
 deploy = [
+    "a2a-sdk[http-server]>=0.3.26",
     "google-cloud-aiplatform[reasoningengine,adk]>=1.93.0",
     "cloudpickle",
 ]
