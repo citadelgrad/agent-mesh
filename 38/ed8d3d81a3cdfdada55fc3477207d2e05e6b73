@@ -1,0 +1,39 @@
+agent_mesh/specialists/security_review.py
+  s_96a1cf0a341c71::t_9247cd448c2dea 34
+  s_824d4af98aa501::t_db9880ed562839 17
+  s_96a1cf0a341c71::t_748529c43ad5fb 244-245,248-251,253-266,268-273,275
+  s_824d4af98aa501::t_6a8ba2de9503d0 222
+  s_824d4af98aa501::t_d4d00ffa8b5c19 267
+  s_824d4af98aa501::t_78ce1bec73d264 139
+tests/test_security_review.py
+  s_824d4af98aa501::t_aa3a0dcd82e1d8 67
+  s_96a1cf0a341c71::t_38f88b09134a39 182,184-188,190,193-196
+  s_824d4af98aa501::t_d9541f9d5a18d9 84
+  s_824d4af98aa501::t_db9c15f8e843bd 49-50,54-56
+  s_824d4af98aa501::t_5d59daf0fd56be 247
+  s_824d4af98aa501::t_196542dc37145c 253
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.13",
+  "base_commit_sha": "38ed8d3d81a3cdfdada55fc3477207d2e05e6b73",
+  "prompts": {},
+  "sessions": {
+    "s_824d4af98aa501": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ea496e1f-3253-4c90-8226-27121f2084fc",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    },
+    "s_96a1cf0a341c71": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "348f3ae0-bdcc-4f19-a83d-4b680a41cb43",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
