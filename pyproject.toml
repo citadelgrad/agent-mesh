@@ -27,6 +27,7 @@ asyncio_mode = "auto"
 
 [dependency-groups]
 dev = [
+    "ruff",
     "pytest",
     "pytest-asyncio",
     "pytest-mock",
@@ -34,13 +35,5 @@ dev = [
 ]
 deploy = [
     "google-cloud-aiplatform[reasoningengine,adk]>=1.93.0",
-    "cloudpickle",
-]
-
-[tool.uv]
-dev-dependencies = [
-    "pytest",
-    "pytest-asyncio",
-    "pytest-mock",
     "cloudpickle",
 ]
