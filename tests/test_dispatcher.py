@@ -8,6 +8,15 @@ from agent_mesh.tools import TimeoutAgentTool
 from agent_mesh import catalog
 from agent_mesh.catalog import RemoteSpec
 
+_loads = json.loads
+
+
+def _json_loads(s: str) -> object:
+    try:
+        return _loads(s)
+    except json.JSONDecodeError as exc:
+        raise AssertionError(f"Expected valid JSON: {exc}") from exc
+
 # Valid AE card URL — passes SSRF validator (host *.aiplatform.googleapis.com, reasoningEngines path)
 _REMOTE_URL = (
     "https://us-central1-aiplatform.googleapis.com"
@@ -94,7 +103,7 @@ async def test_successful_dispatch_writes_result_to_state(dispatcher):
     # arch F5: result key uses capability string, not agent name
     assert "result_cap_a" in ctx.session.state
     result = SpecialistResult.model_validate_json(ctx.session.state["result_cap_a"])
-    assert result.success is True
+    assert result.success
     assert result.agent_name == "AgentA"
 
 
@@ -113,7 +122,7 @@ async def test_unavailable_agent_name_captured_in_state(dispatcher):
     )
     await collect(dispatcher, ctx)
 
-    unavailable = json.loads(ctx.session.state["unavailable_capabilities"])
+    unavailable = _json_loads(ctx.session.state["unavailable_capabilities"])
     assert "cap_missing" in unavailable
 
 
@@ -137,7 +146,7 @@ async def test_missing_tool_treated_as_unavailable():
     )
     await collect(dispatcher, ctx)
 
-    unavailable = json.loads(ctx.session.state["unavailable_capabilities"])
+    unavailable = _json_loads(ctx.session.state["unavailable_capabilities"])
     assert "cap_b" in unavailable
 
 
@@ -165,7 +174,7 @@ async def test_tool_error_dict_captured_as_failed_result():
     await collect(dispatcher, ctx)
 
     result = SpecialistResult.model_validate_json(ctx.session.state["result_cap_a"])
-    assert result.success is False
+    assert not result.success
     assert result.error == "it broke"
 
 
@@ -191,7 +200,7 @@ async def test_tool_exception_captured_as_failed_result():
     await collect(dispatcher, ctx)
 
     result = SpecialistResult.model_validate_json(ctx.session.state["result_cap_a"])
-    assert result.success is False
+    assert not result.success
     assert result.error and "boom" in result.error
 
 
@@ -243,7 +252,7 @@ async def test_multiple_specialists_all_dispatched():
 
     assert "result_cap_a" in ctx.session.state
     assert "result_cap_b" in ctx.session.state
-    assert json.loads(ctx.session.state["unavailable_capabilities"]) == []
+    assert _json_loads(ctx.session.state["unavailable_capabilities"]) == []
 
 
 # ---- Phase 2: remote dispatch ----
@@ -270,7 +279,7 @@ async def test_remote_spec_discovered_at_call_time():
 
     assert "result_cap_remote" in ctx.session.state
     result = SpecialistResult.model_validate_json(ctx.session.state["result_cap_remote"])
-    assert result.success is True
+    assert result.success
     assert "remote output" in result.output
 
 

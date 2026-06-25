@@ -1,5 +1,4 @@
 import asyncio
-from typing import Any
 from google.adk.tools.agent_tool import AgentTool
 from google.adk.tools.tool_context import ToolContext
 from google.adk.agents import BaseAgent
@@ -25,7 +24,7 @@ class TimeoutAgentTool(AgentTool):
         super().__init__(agent=agent)
         self.timeout = timeout
 
-    async def run_async(self, *, args: dict[str, Any], tool_context: ToolContext) -> Any:
+    async def run_async(self, *, args: dict[str, object], tool_context: ToolContext) -> object:
         try:
             return await asyncio.wait_for(
                 super().run_async(args=args, tool_context=tool_context),

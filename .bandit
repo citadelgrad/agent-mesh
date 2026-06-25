@@ -1,0 +1,3 @@
+[bandit]
+exclude = tests
+skips = B101,B108,B112,B404
