@@ -9,10 +9,11 @@ Required env vars:
     GOOGLE_CLOUD_STAGING_BUCKET  (gs://...)
     GH_TOKEN  — fine-grained PAT with scopes: contents:read, pull_requests:write
 
-Prints the card URL to stdout — paste into .envrc as AGENT_MESH_SECURITY_REVIEW_CARD_URL.
+Optional env vars:
+    SECURITY_REVIEW_ENGINE_ID  — resource name from a prior deploy; triggers update instead of create
 
-Note: When wiring this agent into TimeoutAgentTool, raise its timeout to 300s.
-      The default is too short for multi-step OWASP scans that call gh CLI repeatedly.
+Prints card_url to stdout — the deploy workflow captures this as a job output.
+On first deploy, also prints the SECURITY_REVIEW_ENGINE_ID to add to GitHub secrets.
 """
 
 import os
@@ -21,8 +22,7 @@ import sys
 import cloudpickle  # type: ignore  # verify pickling before deploy
 import vertexai  # type: ignore  # google-cloud-aiplatform[reasoningengine,adk]
 from a2a.types import AgentCard, AgentCapabilities, AgentSkill
-from vertexai import agent_engines  # type: ignore
-from vertexai.preview.reasoning_engines import A2aAgent  # type: ignore
+from vertexai._genai import types  # type: ignore
 
 from agent_mesh.specialists.security_review import (
     SECURITY_REVIEW_AGENT,
@@ -30,9 +30,10 @@ from agent_mesh.specialists.security_review import (
 )
 
 PROJECT = os.environ["GOOGLE_CLOUD_PROJECT"]
-REGION = os.environ["GOOGLE_CLOUD_LOCATION"]
+REGION = os.environ.get("GOOGLE_CLOUD_LOCATION", "us-central1")
 BUCKET = os.environ["GOOGLE_CLOUD_STAGING_BUCKET"]
 GH_TOKEN = os.environ["GH_TOKEN"]
+ENGINE_ID = os.environ.get("SECURITY_REVIEW_ENGINE_ID")
 
 
 def _card() -> AgentCard:
@@ -58,27 +59,35 @@ def main() -> None:
         print(f"ERROR: SECURITY_REVIEW_AGENT is not picklable: {e}", file=sys.stderr)
         sys.exit(1)
 
-    vertexai.init(project=PROJECT, location=REGION, staging_bucket=BUCKET)
+    from vertexai.preview.reasoning_engines import A2aAgent  # type: ignore
 
+    client = vertexai.Client(project=PROJECT, location=REGION)
     app = A2aAgent(agent=SECURITY_REVIEW_AGENT, agent_card=_card())
-    engine = agent_engines.create(
-        app,
-        display_name="security-review-agent",
-        requirements=["google-adk[a2a]>=1.25.0", "google-genai"],
-        extra_packages=["installation_scripts/install_gh.sh"],
-        build_options={"installation_scripts": ["installation_scripts/install_gh.sh"]},
-        env_vars={"GH_TOKEN": GH_TOKEN},
-        identity_type="AGENT_IDENTITY",
-    )
+    config = {
+        "display_name": "security-review-agent",
+        "requirements": ["google-adk[a2a]>=1.25.0", "google-genai"],
+        "extra_packages": ["installation_scripts/install_gh.sh"],
+        "build_options": {"installation_scripts": ["installation_scripts/install_gh.sh"]},
+        "env_vars": {"GH_TOKEN": GH_TOKEN},
+        "staging_bucket": BUCKET,
+        "identity_type": types.IdentityType.AGENT_IDENTITY,
+    }
+
+    if ENGINE_ID:
+        remote = client.agent_engines.update(name=ENGINE_ID, agent=app, config=config)
+        resource_name = remote.api_resource.name
+        print(f"Updated: {resource_name}")
+    else:
+        remote = client.agent_engines.create(agent=app, config=config)
+        resource_name = remote.api_resource.name
+        print(f"Created: {resource_name}")
+        print(f"→ Add to GitHub secrets: SECURITY_REVIEW_ENGINE_ID={resource_name}")
 
     card_url = (
         f"https://{REGION}-aiplatform.googleapis.com"
-        f"/v1beta1/{engine.resource_name}/a2a/v1/card"
+        f"/v1beta1/{resource_name}/a2a/v1/card"
     )
-    print(f"resource_name: {engine.resource_name}")
-    print(f"card_url:      {card_url}")
-    print()
-    print(f'Add to .envrc: export AGENT_MESH_SECURITY_REVIEW_CARD_URL="{card_url}"')
+    print(f"card_url: {card_url}")
 
 
 if __name__ == "__main__":
