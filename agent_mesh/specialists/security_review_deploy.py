@@ -43,8 +43,15 @@ def _card() -> AgentCard:
         url="",  # Agent Engine fills this in after deploy
         version="1.0.0",
         capabilities=AgentCapabilities(streaming=False),
+        default_input_modes=["text/plain"],
+        default_output_modes=["text/plain"],
         skills=[
-            AgentSkill(id=cap, name=cap.replace("_", " ").title(), description=cap)
+            AgentSkill(
+                id=cap,
+                name=cap.replace("_", " ").title(),
+                description=cap,
+                tags=[cap],
+            )
             for cap in SECURITY_REVIEW_CAPABILITIES
         ],
     )
