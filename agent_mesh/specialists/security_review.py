@@ -58,14 +58,16 @@ def _validate_file_path(file_path: str) -> bool:
     return True
 
 
-async def _gh_run(args: list, timeout: float = 15.0) -> subprocess.CompletedProcess:
-    loop = asyncio.get_running_loop()
-    return await loop.run_in_executor(
-        None,
-        lambda: subprocess.run(  # noqa: S603  # nosec B603  # ubs:ignore — args validated by _validate_repo/_validate_file_path
-            args, capture_output=True, text=True, timeout=timeout, env=_GH_ENV, check=False
-        ),
+def _gh_run_sync(args: list, timeout: float) -> subprocess.CompletedProcess:
+    # args are validated by _validate_repo/_validate_file_path before reaching here.
+    return subprocess.run(  # noqa: S603  # nosec B603
+        args, capture_output=True, text=True, timeout=timeout, env=_GH_ENV, check=False
     )
+
+
+async def _gh_run(args: list, timeout: float = 15.0) -> subprocess.CompletedProcess:
+    # Run the blocking gh call in a worker thread so the event loop stays free.
+    return await asyncio.to_thread(_gh_run_sync, args, timeout)
 
 
 # --- FunctionTools ---

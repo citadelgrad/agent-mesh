@@ -20,10 +20,7 @@ deploy-security-review: ## Deploy SecurityReviewAgent to Vertex AI Agent Engine
 
 undeploy-code-review:
 	@if [ -z "$$AGENT_ENGINE_ID" ]; then echo "Set AGENT_ENGINE_ID in .envrc"; exit 1; fi
-	uv run --group deploy python -c "\
-import vertexai, os; from vertexai import agent_engines; \
-vertexai.init(project=os.environ['GOOGLE_CLOUD_PROJECT'], location=os.environ['GOOGLE_CLOUD_LOCATION']); \
-agent_engines.get(os.environ['AGENT_ENGINE_ID']).delete()"
+	uv run --group deploy python -m agent_mesh.specialists.code_review_undeploy
 
 jaeger:
 	docker run -d --name jaeger \
